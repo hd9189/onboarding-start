@@ -20,7 +20,7 @@ module tt_um_uwasic_onboarding_Hugh_Ding (
   // All output pins must be assigned. If not used, assign to 0.
   assign uo_out  = ui_in + uio_in;  // Example: ou_out is the sum of ui_in and uio_in
   assign uio_out = 0;
-  assign uio_oe  = 0;
+  // assign uio_oe  = 0;
   assign uio_oe = 8'hFF; // Set all IOs to output
   
 
@@ -33,6 +33,31 @@ module tt_um_uwasic_onboarding_Hugh_Ding (
   wire [7:0] en_reg_pwm_7_0;
   wire [7:0] en_reg_pwm_15_8;
   wire [7:0] pwm_duty_cycle;
+
+  pwm_peripheral pwm_peripheral_instance (
+    .clk(clk),      // clock
+    .rst_n(rst_n),     // reset_n - low to reset
+    .en_reg_out_7_0(en_reg_out_7_0),
+    .en_reg_out_15_8(en_reg_out_15_8),
+    .en_reg_pwm_7_0(en_reg_pwm_7_0),
+    .en_reg_pwm_15_8(en_reg_pwm_15_8),
+    .pwm_duty_cycle(pwm_duty_cycle),
+    .out({uio_out, uo_out}
+)
+
+spi_peripheral spi_peripheral_instance (
+    .clk(clk),
+    .sclk(ui_in[0]),  // Assuming ui_in[0] is SCLK
+    .COPI(ui_in[1]),   // COPI
+    .cs(ui_in[2]),    // nCS
+    .rst_n(rst_n),
+    .CIPO(),  // Connect if needed
+    .en_reg_out_7_0(en_reg_out_7_0),
+    .en_reg_out_15_8(en_reg_out_15_8),
+    .en_reg_pwm_7_0(en_reg_pwm_7_0),
+    .en_reg_pwm_15_8(en_reg_pwm_15_8),
+    .pwm_duty_cycle(pwm_duty_cycle)
+);
 
   
 
