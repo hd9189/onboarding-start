@@ -18,15 +18,13 @@ module tt_um_uwasic_onboarding_Hugh_Ding (
 );
 
   // All output pins must be assigned. If not used, assign to 0.
-  assign uo_out  = en_reg_out_7_0;  // Connect to SPI output register
-  assign uio_out = en_reg_out_15_8;  // Connect to second SPI output register
   // assign uio_oe  = 0;
   assign uio_oe = 8'hFF; // Set all IOs to output
   
 
   // List all unused inputs to prevent warnings
-  wire _unused = &{ena, uio_in, 1'b0};
-
+  wire _unused = &{ena, clk, rst_n, 1'b0, uio_in, ui_in[7:3]};
+  
   // Create wires to refer to the values of the registers
   wire [7:0] en_reg_out_7_0;
   wire [7:0] en_reg_out_15_8;
@@ -51,7 +49,6 @@ spi_peripheral spi_peripheral_instance (
     .COPI(ui_in[1]),   // COPI
     .cs(ui_in[2]),    // nCS
     .rst_n(rst_n),
-    .CIPO(),  // Connect if needed
     .en_reg_out_7_0(en_reg_out_7_0),
     .en_reg_out_15_8(en_reg_out_15_8),
     .en_reg_pwm_7_0(en_reg_pwm_7_0),
