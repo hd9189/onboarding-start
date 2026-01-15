@@ -29,9 +29,9 @@ module spi_peripheral (
             en_reg_pwm_15_8 = 8'b0;
             pwm_duty_cycle = 8'b0;
 
-            SCLK_sync = 0;
-            COPI_sync = 0;
-            cs_sync = 0;
+            SCLK_sync = 2'b0;
+            COPI_sync = 2'b0;
+            cs_sync = 2'b0;
         end else begin
 
             // updates on clk posedge
