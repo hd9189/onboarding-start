@@ -43,7 +43,7 @@ module spi_peripheral (
         if (cs_sync == 2'b10) begin // cs falling edge, begin data capture
             data = 16'b0;
             current_bit_shift = 5'b0;
-        end else if (cs_sync == 2'b00 && SCLK_sync = 2'b01 && current_bit_shift != 5'b10000) begin
+        end else if (cs_sync == 2'b00 && SCLK_sync == 2'b01 && current_bit_shift != 5'b10000) begin
             data[current_bit_shift] <= COPI_sync[1];
             current_bit_shift <= current_bit_shift + 1;
         end
