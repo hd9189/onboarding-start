@@ -43,7 +43,7 @@ module tt_um_uwasic_onboarding_Hugh_Ding (
     .en_reg_pwm_15_8(en_reg_pwm_15_8),
     .pwm_duty_cycle(pwm_duty_cycle),
     .out({uio_out, uo_out}
-)
+);
 
 spi_peripheral spi_peripheral_instance (
     .clk(clk),
