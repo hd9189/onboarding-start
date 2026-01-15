@@ -3,6 +3,7 @@
 module spi_peripheral (
     input wire clk, sclk, COPI, cs, rst_n,
 
+    output wire CIPO,
     output reg [7:0] en_reg_out_7_0,
     output reg [7:0] en_reg_out_15_8,
     output reg [7:0] en_reg_pwm_7_0,
@@ -62,5 +63,8 @@ module spi_peripheral (
             end
         end
     end
+
+    assign CIPO = 1'b0;
+
 
 endmodule
