@@ -25,7 +25,7 @@ module tt_um_uwasic_onboarding_Hugh_Ding (
   
 
   // List all unused inputs to prevent warnings
-  wire _unused = &{ena, clk, rst_n, 1'b0};
+  wire _unused = &{ena, uio_in, 1'b0};
 
   // Create wires to refer to the values of the registers
   wire [7:0] en_reg_out_7_0;
