@@ -25,7 +25,6 @@ module spi_peripheral (
 
     wire cs_negedge;
     wire SCLK_posedge;
-    wire cs_high;
 
     assign cs_negedge = cs_prev && !cs_sync2;
     assign SCLK_posedge = !SCLK_prev && SCLK_sync2;
@@ -70,7 +69,8 @@ module spi_peripheral (
             if (cs_negedge) begin // cs falling edge, begin data capture
                 data <= 16'b0;
                 current_bit_shift <= 5'b0;
-            end else if (!cs_sync2 && SCLK_posedge && current_bit_shift < 5'd16) begin // sclk rising edge
+            end 
+            if (!cs_sync2 && SCLK_posedge && current_bit_shift < 5'd16) begin // sclk rising edge
                 data[15 - current_bit_shift] <= COPI_sync2;
                 current_bit_shift <= current_bit_shift + 1;
             end
