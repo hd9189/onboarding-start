@@ -19,7 +19,6 @@ module spi_peripheral (
     reg cs_sync1;
     reg cs_sync2;
     reg cs_prev;
-    reg write;
 
     reg [15:0] data;
     reg [4:0] current_bit_shift; //current bit when shifting
@@ -52,7 +51,6 @@ module spi_peripheral (
             
             data <= 16'b0;
             current_bit_shift <= 5'b0;
-            write <= 1'b0;
             
         end else begin
 
@@ -68,33 +66,26 @@ module spi_peripheral (
             cs_sync2 <= cs_sync1;
             cs_prev <= cs_sync2;
 
-            write <= 1'b0;
-
             if (cs_negedge) begin // cs falling edge, begin data capture
                 data <= 16'b0;
                 current_bit_shift <= 5'b0;
-                
-            end else if (!cs_sync2 && SCLK_posedge) begin
+            end else if (!cs_sync2 && SCLK_posedge && current_bit_shift < 5'd16) begin // sclk rising edge
                 data[15 - current_bit_shift] <= COPI_sync2;
 
-                if (current_bit_shift == 5'd15) begin
-                    write <= 1'b1;
-                    current_bit_shift <= 5'd0;
-                end else begin
-                    current_bit_shift <= current_bit_shift + 1'b1;
-                end
-            end
                 // last bit just arrived, current bit shift is 15
-            if (write) begin // finished shifting and write, write only once
-                case (data[14:8])
-                    7'h00 : en_reg_out_7_0 <= data[7:0];
-                    7'h01 : en_reg_out_15_8 <= data[7:0];
-                    7'h02 : en_reg_pwm_7_0 <= data[7:0];
-                    7'h03 : en_reg_pwm_15_8 <= data[7:0];
-                    7'h04 : pwm_duty_cycle <= data[7:0];
-                    default: ;
-                endcase
-            end
+                if (cs_sync2 == 0 && SCLK_posedge && current_bit_shift == 5'd15 && data[15]) begin // finished shifting and write, write only once
+                    case (data[14:8])
+                        7'h00 : en_reg_out_7_0 <= data[7:0];
+                        7'h01 : en_reg_out_15_8 <= data[7:0];
+                        7'h02 : en_reg_pwm_7_0 <= data[7:0];
+                        7'h03 : en_reg_pwm_15_8 <= data[7:0];
+                        7'h04 : pwm_duty_cycle <= data[7:0];
+                        default: ;
+                    endcase
+                end
+                current_bit_shift <= current_bit_shift + 1'b1;
+
+            end 
         end
     end
 
