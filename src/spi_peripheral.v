@@ -25,8 +25,9 @@ module spi_peripheral (
 
     wire cs_negedge;
     wire SCLK_posedge;
+    wire cs_high;
 
-    assign cs_negedge = !cs_sync2 && cs_prev;
+    assign cs_negedge = cs_prev && !cs_sync2;
     assign SCLK_posedge = !SCLK_prev && SCLK_sync2;
 
 
@@ -46,7 +47,7 @@ module spi_peripheral (
             COPI_sync1 <= 0;
             COPI_sync2 <= 0;
             cs_sync1 <= 1;
-            cs_sync2 <= 1
+            cs_sync2 <= 1;
             cs_prev <= 1;
             
             data <= 16'b0;
@@ -69,11 +70,11 @@ module spi_peripheral (
             if (cs_negedge) begin // cs falling edge, begin data capture
                 data <= 16'b0;
                 current_bit_shift <= 5'b0;
-            end else if (cs_sync2 == 0 && SCLK_posedge && current_bit_shift < 5'd16) begin // sclk rising edge
-                data[15 - current_bit_shift] <= COPI_sync[1];
+            end else if (!cs_sync2 && SCLK_posedge && current_bit_shift < 5'd16) begin // sclk rising edge
+                data[15 - current_bit_shift] <= COPI_sync2;
                 current_bit_shift <= current_bit_shift + 1;
             end
-            if (current_bit_shift == 5'b10000 && data[15] == 1) begin // finished shifting and write, write only once
+            if (cs_sync2 == 0 && SCLK_posedge && current_bit_shift == 5'd16 && data[15]) begin // finished shifting and write, write only once
                 case (data[14:8])
                     7'h00 : en_reg_out_7_0 <= data[7:0];
                     7'h01 : en_reg_out_15_8 <= data[7:0];
