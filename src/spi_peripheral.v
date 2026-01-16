@@ -45,9 +45,9 @@ module spi_peripheral (
             SCLK_prev <= 0;
             COPI_sync1 <= 0;
             COPI_sync2 <= 0;
-            cs_sync1 <= 1;
-            cs_sync2 <= 1;
-            cs_prev <= 1;
+            cs_sync1 <= 0;
+            cs_sync2 <= 0;
+            cs_prev <= 0;
             
             data <= 16'b0;
             current_bit_shift <= 5'b0;
