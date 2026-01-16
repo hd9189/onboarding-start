@@ -22,6 +22,7 @@ module spi_peripheral (
 
     reg [15:0] data;
     reg [4:0] current_bit_shift; //current bit when shifting
+    reg data_ready; // Flag to indicate data is ready to latch
 
     wire cs_negedge;
     wire SCLK_posedge;
@@ -51,6 +52,7 @@ module spi_peripheral (
             
             data <= 16'b0;
             current_bit_shift <= 5'b0;
+            data_ready <= 1'b0;
             
         end else begin
 
@@ -66,23 +68,29 @@ module spi_peripheral (
             cs_sync2 <= cs_sync1;
             cs_prev <= cs_sync2;
 
+            // Latch data when data_ready flag is set (one cycle after all 16 bits received)
+            if (data_ready) begin
+                case (data[14:8])
+                    7'h00 : en_reg_out_7_0 <= data[7:0];
+                    7'h01 : en_reg_out_15_8 <= data[7:0];
+                    7'h02 : en_reg_pwm_7_0 <= data[7:0];
+                    7'h03 : en_reg_pwm_15_8 <= data[7:0];
+                    7'h04 : pwm_duty_cycle <= data[7:0];
+                    default: ;
+                endcase
+                data_ready <= 1'b0;
+            end
+
             if (cs_negedge) begin // cs falling edge, begin data capture
                 data <= 16'b0;
                 current_bit_shift <= 5'b0;
+                data_ready <= 1'b0;
             end else if (!cs_sync2 && SCLK_posedge) begin // Shift data on SCLK rising edge while CS is low
-                data[15 - current_bit_shift] <= COPI_sync2;
+                data <= {data[14:0],COPI_sync2};
                 if (current_bit_shift == 5'd15) begin
-                    // Latch data to output registers
-                    case (data[14:8])
-                        7'h00 : en_reg_out_7_0 <= data[7:0];
-                        7'h01 : en_reg_out_15_8 <= data[7:0];
-                        7'h02 : en_reg_pwm_7_0 <= data[7:0];
-                        7'h03 : en_reg_pwm_15_8 <= data[7:0];
-                        7'h04 : pwm_duty_cycle <= data[7:0];
-                        default: ;
-                    endcase
+                    // Signal that data is ready to latch (will happen next cycle)
                     current_bit_shift <= 0; // reset for next transaction
-                    data <= 0;
+                    data_ready <= 1'b1;
                 end else begin
                     current_bit_shift <= current_bit_shift + 1'b1;
                 end

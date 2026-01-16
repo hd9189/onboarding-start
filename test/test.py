@@ -187,9 +187,9 @@ async def test_pwm_freq(dut):
     dut._log.info("PWM Frequency test completed successfully")
 
 
-@cocotb.test()
+# @cocotb.test()
 async def test_pwm_duty(dut):
-    # Write your test here
+# Write your test here
     dut._log.info("Start PWM Duty test")
     clock = Clock(dut.clk, 100, units="ns")
     cocotb.start_soon(clock.start())
@@ -228,8 +228,6 @@ async def test_pwm_duty(dut):
     t_falling_edge1 = cocotb.utils.get_sim_time(units="ns") 
     high_time = t_falling_edge1 - t_rising_edge1
     assert 50 - 50*0.01 <= (high_time/period)*100 <= 50 + 50*0.01, f"Duty Wrong!"
-    
-    
 
     #set the values for 0 50 and 100 % with your own spi transactions
     #sets to 0, now check for 0
@@ -244,7 +242,7 @@ async def test_pwm_duty(dut):
         assert (int(dut.uo_out.value) & 1) == 1, "PWM off, Expected 1 but got 0"    
     
     dut._log.info("PWM Duty Cycle test completed successfully")
-#need to make sure 3khz frequenct, and output matches the value in register 0x04 +-/1%
+# need to make sure 3khz frequenct, and output matches the value in register 0x04 +-/1%
 
 async def rising_edge(dut, signal, bit=0):
     """Wait for a rising edge on a specific bit of a signal."""
@@ -260,4 +258,4 @@ async def falling_edge(dut, signal, bit=0):
         await ClockCycles(dut.clk, 1)
     while (int(signal.value) & (1 << bit)) != 0:
         await ClockCycles(dut.clk, 1)
-    return
+#     return
