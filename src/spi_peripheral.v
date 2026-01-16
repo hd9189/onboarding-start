@@ -45,9 +45,9 @@ module spi_peripheral (
             SCLK_prev <= 0;
             COPI_sync1 <= 0;
             COPI_sync2 <= 0;
-            cs_sync1 <= 0;
-            cs_sync2 <= 0;
-            cs_prev <= 0;
+            cs_sync1 <= 1;
+            cs_sync2 <= 1;
+            cs_prev <= 1;
             
             data <= 16'b0;
             current_bit_shift <= 5'b0;
@@ -69,21 +69,22 @@ module spi_peripheral (
             if (cs_negedge) begin // cs falling edge, begin data capture
                 data <= 16'b0;
                 current_bit_shift <= 5'b0;
-            end 
-            if (!cs_sync2 && SCLK_posedge && current_bit_shift < 5'd16) begin // sclk rising edge
+            end else if (!cs_sync2 && SCLK_posedge && current_bit_shift < 5'd16) begin // sclk rising edge
                 data[15 - current_bit_shift] <= COPI_sync2;
-                current_bit_shift <= current_bit_shift + 1;
-            end
-            if (cs_sync2 == 0 && SCLK_posedge && current_bit_shift == 5'd16 && data[15]) begin // finished shifting and write, write only once
-                case (data[14:8])
-                    7'h00 : en_reg_out_7_0 <= data[7:0];
-                    7'h01 : en_reg_out_15_8 <= data[7:0];
-                    7'h02 : en_reg_pwm_7_0 <= data[7:0];
-                    7'h03 : en_reg_pwm_15_8 <= data[7:0];
-                    7'h04 : pwm_duty_cycle <= data[7:0];
-                    default: ;
-                endcase
-            end
+                current_bit_shift <= current_bit_shift + 1'b1;
+
+                // last bit just arrived
+                if (cs_sync2 == 0 && SCLK_posedge && current_bit_shift == 5'd16 && data[15]) begin // finished shifting and write, write only once
+                    case (data[14:8])
+                        7'h00 : en_reg_out_7_0 <= data[7:0];
+                        7'h01 : en_reg_out_15_8 <= data[7:0];
+                        7'h02 : en_reg_pwm_7_0 <= data[7:0];
+                        7'h03 : en_reg_pwm_15_8 <= data[7:0];
+                        7'h04 : pwm_duty_cycle <= data[7:0];
+                        default: ;
+                    endcase
+                end
+            end 
         end
     end
 
