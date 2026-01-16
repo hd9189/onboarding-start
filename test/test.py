@@ -209,17 +209,17 @@ async def test_pwm_duty(dut):
         period = t_next - t_rise
         return (high_time / period) * 100.0
 
-    # ---- 0% duty ----
+    # 0% duty
     await send_spi_transaction(dut, 1, 0x04, 0x00)
     await ClockCycles(dut.clk, 2000)
     assert dut.uo_out.value[0] == 0, "PWM should be always low at 0% duty"
 
-    # ---- 100% duty ----
+    # 100% duty
     await send_spi_transaction(dut, 1, 0x04, 0xFF)
     await ClockCycles(dut.clk, 2000)
     assert dut.uo_out.value[0] == 1, "PWM should be always high at 100% duty"
 
-    # ---- 50% duty ----
+    # 50% duty
     await send_spi_transaction(dut, 1, 0x04, 0x80)
     await ClockCycles(dut.clk, 2000)
 
