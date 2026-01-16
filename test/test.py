@@ -168,13 +168,13 @@ async def test_pwm_freq(dut):
     dut._log.info("Finished Reset")
     dut._log.info("Checking Frequency")
     await send_spi_transaction(dut, 1, 0x00, 0xFF)
-    await ClockCycles(dut.clk, 1000)
+    await ClockCycles(dut.clk, 30000)
     await send_spi_transaction(dut, 1, 0x01, 0xFF)
-    await ClockCycles(dut.clk, 1000)
+    await ClockCycles(dut.clk, 30000)
     await send_spi_transaction(dut, 1, 0x02, 0xFF)
-    await ClockCycles(dut.clk, 1000)
+    await ClockCycles(dut.clk, 30000)
     await send_spi_transaction(dut, 1, 0x04, 0x80)
-    await ClockCycles(dut.clk, 1000)
+    await ClockCycles(dut.clk, 30000)
     await ClockCycles(dut.clk, 100)
     await rising_edge(dut, dut.uo_out, bit=0)
     t_rising_edge1 = cocotb.utils.get_sim_time(units="ns")
@@ -208,14 +208,14 @@ async def test_pwm_duty(dut):
 
     dut._log.info("Checking Duty Cycle")
     await send_spi_transaction(dut, 1, 0x00, 0xFF)
-    await ClockCycles(dut.clk, 1000)
+    await ClockCycles(dut.clk, 30000)
     await send_spi_transaction(dut, 1, 0x01, 0xFF)
-    await ClockCycles(dut.clk, 1000)
+    await ClockCycles(dut.clk, 30000)
     await send_spi_transaction(dut, 1, 0x02, 0xFF)
-    await ClockCycles(dut.clk, 1000)
+    await ClockCycles(dut.clk, 30000)
     await send_spi_transaction(dut, 1, 0x04, 0x80)
     #sets to 50%
-    await ClockCycles(dut.clk, 1000)
+    await ClockCycles(dut.clk, 30000)
     await ClockCycles(dut.clk, 100)
     await rising_edge(dut, dut.uo_out, bit=0)
     t_rising_edge1 = cocotb.utils.get_sim_time(units="ns")
@@ -232,12 +232,12 @@ async def test_pwm_duty(dut):
     #set the values for 0 50 and 100 % with your own spi transactions
     #sets to 0, now check for 0
     await send_spi_transaction(dut,1,0x04,0x00)
-    await ClockCycles(dut.clk, 1000)
+    await ClockCycles(dut.clk, 30000)
     for i in range(int(period/100)):
         assert (int(dut.uo_out.value) & 1) == 0, "PWM off, Expected 0 but got 1"
 
     await send_spi_transaction(dut,1,0x04,0xFF)
-    await ClockCycles(dut.clk, 1000)
+    await ClockCycles(dut.clk, 30000)
     for i in range(int(period/100)):
         assert (int(dut.uo_out.value) & 1) == 1, "PWM off, Expected 1 but got 0"    
     
