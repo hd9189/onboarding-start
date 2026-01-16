@@ -69,11 +69,10 @@ module spi_peripheral (
             if (cs_negedge) begin // cs falling edge, begin data capture
                 data <= 16'b0;
                 current_bit_shift <= 5'b0;
-            end else if (!cs_sync2 && SCLK_posedge && current_bit_shift < 5'd16) begin // sclk rising edge
+            end else if (!cs_sync2 && SCLK_posedge) begin // Shift data on SCLK rising edge while CS is low
                 data[15 - current_bit_shift] <= COPI_sync2;
-
-                // last bit just arrived, current bit shift is 15
-                if (cs_sync2 == 0 && SCLK_posedge && current_bit_shift == 5'd15 && data[15]) begin // finished shifting and write, write only once
+                if (current_bit_shift == 5'd15) begin
+                    // Latch data to output registers
                     case (data[14:8])
                         7'h00 : en_reg_out_7_0 <= data[7:0];
                         7'h01 : en_reg_out_15_8 <= data[7:0];
@@ -82,10 +81,12 @@ module spi_peripheral (
                         7'h04 : pwm_duty_cycle <= data[7:0];
                         default: ;
                     endcase
+                    current_bit_shift <= 0; // reset for next transaction
+                    data <= 0;
+                end else begin
+                    current_bit_shift <= current_bit_shift + 1'b1;
                 end
-                current_bit_shift <= current_bit_shift + 1'b1;
-
-            end 
+            end
         end
     end
 
