@@ -8,6 +8,8 @@ from cocotb.triggers import ClockCycles
 from cocotb.types import Logic
 from cocotb.types import LogicArray
 
+
+
 async def await_half_sclk(dut):
     """Wait for the SCLK signal to go high or low."""
     start_time = cocotb.utils.get_sim_time(units="ns")
@@ -151,11 +153,78 @@ async def test_spi(dut):
 
 @cocotb.test()
 async def test_pwm_freq(dut):
-    # Write your test here
-    dut._log.info("PWM Frequency test completed successfully")
+    dut._log.info("Starting PWM Frequency Test")
 
+    # Enable output and PWM mode
+    await send_spi_transaction(dut, 1, 0x00, 0x01)  # Output enable
+    await send_spi_transaction(dut, 1, 0x02, 0x01)  # PWM enable
+    await send_spi_transaction(dut, 1, 0x04, 0x80)  # 50% duty
+
+    await ClockCycles(dut.clk, 1000)
+
+    # Wait for first rising edge
+    while dut.uo_out.value[0] == 0:
+        await RisingEdge(dut.clk)
+    t1 = cocotb.utils.get_sim_time(units="ns")
+
+    # Wait for second rising edge
+    while dut.uo_out.value[0] == 1:
+        await RisingEdge(dut.clk)
+    while dut.uo_out.value[0] == 0:
+        await RisingEdge(dut.clk)
+    t2 = cocotb.utils.get_sim_time(units="ns")
+
+    period_ns = t2 - t1
+    freq_hz = 1e9 / period_ns
+
+    dut._log.info(f"Measured PWM frequency: {freq_hz:.2f} Hz")
+
+    assert 2970 <= freq_hz <= 3030, \
+        f"PWM frequency out of range: {freq_hz:.2f} Hz"
 
 @cocotb.test()
 async def test_pwm_duty(dut):
-    # Write your test here
-    dut._log.info("PWM Duty Cycle test completed successfully")
+    dut._log.info("Starting PWM Duty Cycle Test")
+
+    await send_spi_transaction(dut, 1, 0x00, 0x01)  # Output enable
+    await send_spi_transaction(dut, 1, 0x02, 0x01)  # PWM enable
+
+    async def measure_duty():
+        # Rising edge
+        while dut.uo_out.value[0] == 0:
+            await RisingEdge(dut.clk)
+        t_rise = cocotb.utils.get_sim_time(units="ns")
+
+        # Falling edge
+        while dut.uo_out.value[0] == 1:
+            await RisingEdge(dut.clk)
+        t_fall = cocotb.utils.get_sim_time(units="ns")
+
+        # Next rising edge
+        while dut.uo_out.value[0] == 0:
+            await RisingEdge(dut.clk)
+        t_next = cocotb.utils.get_sim_time(units="ns")
+
+        high_time = t_fall - t_rise
+        period = t_next - t_rise
+        return (high_time / period) * 100.0
+
+    # ---- 0% duty ----
+    await send_spi_transaction(dut, 1, 0x04, 0x00)
+    await ClockCycles(dut.clk, 2000)
+    assert dut.uo_out.value[0] == 0, "PWM should be always low at 0% duty"
+
+    # ---- 100% duty ----
+    await send_spi_transaction(dut, 1, 0x04, 0xFF)
+    await ClockCycles(dut.clk, 2000)
+    assert dut.uo_out.value[0] == 1, "PWM should be always high at 100% duty"
+
+    # ---- 50% duty ----
+    await send_spi_transaction(dut, 1, 0x04, 0x80)
+    await ClockCycles(dut.clk, 2000)
+
+    duty = await measure_duty()
+    dut._log.info(f"Measured duty cycle: {duty:.2f}%")
+
+    assert 49 <= duty <= 51, \
+        f"Duty cycle out of range: {duty:.2f}%"
