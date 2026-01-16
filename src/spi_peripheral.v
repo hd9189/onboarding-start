@@ -71,10 +71,9 @@ module spi_peripheral (
                 current_bit_shift <= 5'b0;
             end else if (!cs_sync2 && SCLK_posedge && current_bit_shift < 5'd16) begin // sclk rising edge
                 data[15 - current_bit_shift] <= COPI_sync2;
-                current_bit_shift <= current_bit_shift + 1'b1;
 
-                // last bit just arrived
-                if (cs_sync2 == 0 && SCLK_posedge && current_bit_shift == 5'd16 && data[15]) begin // finished shifting and write, write only once
+                // last bit just arrived, current bit shift is 15
+                if (cs_sync2 == 0 && SCLK_posedge && current_bit_shift == 5'd15 && data[15]) begin // finished shifting and write, write only once
                     case (data[14:8])
                         7'h00 : en_reg_out_7_0 <= data[7:0];
                         7'h01 : en_reg_out_15_8 <= data[7:0];
@@ -84,6 +83,8 @@ module spi_peripheral (
                         default: ;
                     endcase
                 end
+                current_bit_shift <= current_bit_shift + 1'b1;
+
             end 
         end
     end
