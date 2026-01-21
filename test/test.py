@@ -187,7 +187,7 @@ async def test_pwm_freq(dut):
     dut._log.info("PWM Frequency test completed successfully")
 
 
-# @cocotb.test()
+@cocotb.test()
 async def test_pwm_duty(dut):
 # Write your test here
     dut._log.info("Start PWM Duty test")
@@ -258,4 +258,4 @@ async def falling_edge(dut, signal, bit=0):
         await ClockCycles(dut.clk, 1)
     while (int(signal.value) & (1 << bit)) != 0:
         await ClockCycles(dut.clk, 1)
-#     return
+    return

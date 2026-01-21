@@ -20,7 +20,7 @@ module spi_peripheral (
     reg cs_sync2;
     reg cs_prev;
 
-    reg [15:0] data;
+    reg [14:0] data;
     reg [4:0] current_bit_shift; //current bit when shifting
     reg data_ready; // Flag to indicate data is ready to latch
 
@@ -50,7 +50,7 @@ module spi_peripheral (
             cs_sync2 <= 1;
             cs_prev <= 1;
             
-            data <= 16'b0;
+            data <= 15'b0;
             current_bit_shift <= 5'b0;
             data_ready <= 1'b0;
             
@@ -82,11 +82,11 @@ module spi_peripheral (
             end
 
             if (cs_negedge) begin // cs falling edge, begin data capture
-                data <= 16'b0;
+                data <= 14'b0;
                 current_bit_shift <= 5'b0;
                 data_ready <= 1'b0;
             end else if (!cs_sync2 && SCLK_posedge) begin // Shift data on SCLK rising edge while CS is low
-                data <= {data[14:0],COPI_sync2};
+                data <= {data[13:0],COPI_sync2};
                 if (current_bit_shift == 5'd15) begin
                     // Signal that data is ready to latch (will happen next cycle)
                     current_bit_shift <= 0; // reset for next transaction
