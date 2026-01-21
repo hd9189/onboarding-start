@@ -82,12 +82,12 @@ module spi_peripheral (
             end
 
             if (cs_negedge) begin // cs falling edge, begin data capture
-                data <= 14'b0;
+                data <= 15'b0;
                 current_bit_shift <= 5'b0;
                 data_ready <= 1'b0;
             end else if (!cs_sync2 && SCLK_posedge) begin // Shift data on SCLK rising edge while CS is low
                 data <= {data[13:0],COPI_sync2};
-                if (current_bit_shift == 5'd15) begin
+                if (current_bit_shift == 5'd14) begin
                     // Signal that data is ready to latch (will happen next cycle)
                     current_bit_shift <= 0; // reset for next transaction
                     data_ready <= 1'b1;
